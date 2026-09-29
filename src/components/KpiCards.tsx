@@ -16,6 +16,7 @@ function Kpi({
   sensitive = true,
   placeholder,
   alt,
+  estimated,
 }: {
   label: string
   icon: ReactNode
@@ -27,6 +28,8 @@ function Kpi({
   placeholder?: string
   /** Secondary USD line (already formatted). */
   alt?: ReactNode
+  /** Marks the value as based on the estimated amount paid. */
+  estimated?: boolean
 }) {
   const color =
     tone === 'gain'
@@ -39,6 +42,14 @@ function Kpi({
       <div className="flex items-center gap-2 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
         <span className="text-orange-500">{icon}</span>
         {label}
+        {estimated && (
+          <span
+            className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold tracking-normal text-amber-700 normal-case dark:text-amber-400"
+            title="Based on the market value of your purchases. Enter the total amount paid for exact figures."
+          >
+            est.
+          </span>
+        )}
       </div>
       <div className="mt-3 min-h-[2.25rem]">
         {loading ? (
@@ -67,6 +78,7 @@ export function KpiCards({ m, priceLoading }: { m: PortfolioMetrics; priceLoadin
   const usdFiat = (v: number | null | undefined, decimals?: number, signed?: boolean) =>
     usd && v != null && Number.isFinite(v) ? usd.fmt.fiat(v, { decimals, signed }) : undefined
   const needPrice = m.currentPrice == null
+  const est = m.amountPaidEstimated
   const pnlTone = m.pnl == null ? undefined : m.pnl >= 0 ? 'gain' : 'loss'
 
   return (
@@ -89,15 +101,17 @@ export function KpiCards({ m, priceLoading }: { m: PortfolioMetrics; priceLoadin
       <Kpi
         label="Total paid"
         icon={<Wallet size={14} />}
+        estimated={est}
         placeholder={m.amountPaid == null ? ENTER : undefined}
         value={fmt.fiat(m.amountPaid)}
         alt={usdFiat(u?.amountPaid)}
-        sub="incl. all fees"
+        sub={est ? 'Sum of historical values — enter the real amount to include fees' : 'incl. all fees'}
       />
       <Kpi
         label="Profit / Loss"
         icon={pnlTone === 'loss' ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
         tone={pnlTone}
+        estimated={est}
         loading={priceLoading && needPrice && m.amountPaid != null}
         placeholder={m.amountPaid == null ? ENTER : needPrice && !priceLoading ? 'Price unavailable' : undefined}
         value={fmt.fiat(m.pnl, { signed: true })}
@@ -113,6 +127,7 @@ export function KpiCards({ m, priceLoading }: { m: PortfolioMetrics; priceLoadin
       <Kpi
         label="Avg buy price (effective)"
         icon={<Target size={14} />}
+        estimated={est}
         placeholder={m.amountPaid == null ? ENTER : undefined}
         value={fmt.fiat(m.avgBuyPriceEffective, { decimals: 0 })}
         alt={usdFiat(u?.avgBuyPriceEffective, 0)}
@@ -126,6 +141,7 @@ export function KpiCards({ m, priceLoading }: { m: PortfolioMetrics; priceLoadin
       <Kpi
         label="Break-even price"
         icon={<Scale size={14} />}
+        estimated={est}
         placeholder={m.amountPaid == null ? ENTER : undefined}
         value={fmt.fiat(m.breakEvenPrice, { decimals: 0 })}
         alt={usdFiat(u?.breakEvenPrice, 0)}
@@ -138,7 +154,7 @@ export function KpiCards({ m, priceLoading }: { m: PortfolioMetrics; priceLoadin
       <Kpi
         label="Fees, spread & exchange costs"
         icon={<Receipt size={14} />}
-        placeholder={m.amountPaid == null ? ENTER : undefined}
+        placeholder={m.feesSpread == null ? ENTER : undefined}
         value={fmt.fiat(m.feesSpread)}
         alt={usdFiat(u?.feesSpread)}
         sub={`${fmt.percent(m.feesSpreadPct)} of amount paid`}

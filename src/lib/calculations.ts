@@ -47,7 +47,11 @@ export function computeMetrics(
   const historicalValue = sum(valued.map((t) => t.historicalValue as number))
   const valuedBtc = satsToBtc(sum(valued.map((t) => t.amountSats)))
 
-  const paid = amountPaid != null && Number.isFinite(amountPaid) && amountPaid > 0 ? amountPaid : null
+  const entered = amountPaid != null && Number.isFinite(amountPaid) && amountPaid > 0 ? amountPaid : null
+  // Without an entered amount, the market value of purchases is a lower-bound estimate (excludes exchange fees).
+  const estimated = entered == null && historicalValue > 0
+  const paid = entered ?? (estimated ? historicalValue : null)
+  const knownPaid = estimated ? null : paid
   const currentValue = currentPrice != null ? heldBtc * currentPrice : null
   const perBtcPaid = paid != null && held > 0 ? paid / heldBtc : null
 
@@ -73,13 +77,15 @@ export function computeMetrics(
     missingHistoricalValues: rec.length - valued.length,
     avgBuyPriceMarket: valuedBtc > 0 ? historicalValue / valuedBtc : null,
     amountPaid: paid,
+    amountPaidEstimated: estimated,
     avgBuyPriceEffective: perBtcPaid,
     currentPrice,
     currentValue,
     pnl: paid != null && currentValue != null ? currentValue - paid : null,
     pnlPct: paid != null && currentValue != null ? (currentValue - paid) / paid : null,
-    feesSpread: paid != null ? paid - historicalValue : null,
-    feesSpreadPct: paid != null ? (paid - historicalValue) / paid : null,
+    // Unknown (not 0) when estimated: fees can only be derived from the real amount paid.
+    feesSpread: knownPaid != null ? knownPaid - historicalValue : null,
+    feesSpreadPct: knownPaid != null ? (knownPaid - historicalValue) / knownPaid : null,
     networkFeeFiatHistorical,
     networkFeeFiatCurrent: currentPrice != null ? satsToBtc(networkFeeSats) * currentPrice : null,
     breakEvenPrice: perBtcPaid,

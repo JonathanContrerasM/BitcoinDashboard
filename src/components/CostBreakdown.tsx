@@ -95,7 +95,7 @@ export function CostBreakdown({ m }: { m: PortfolioMetrics }) {
                 </span>
               </li>
             ))}
-            {m.amountPaid == null && (
+            {m.amountPaidEstimated && (
               <li className="text-xs text-slate-500 italic dark:text-slate-400">
                 Enter amount paid to see fees & spread.
               </li>

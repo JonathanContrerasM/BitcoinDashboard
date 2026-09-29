@@ -103,10 +103,18 @@ describe('dashboard render (smoke)', () => {
     expect(html).not.toContain('Enter amount paid')
   })
 
-  it('shows placeholders without amount paid or price', () => {
+  it('estimates amount paid when empty and still asks for it for fees', () => {
+    const html = renderDashboard(null, 90_000, false)
+    expect(html).toContain('est.')
+    expect(html).toContain('Sum of historical values')
+    expect(html).toContain('Enter amount paid') // fees & spread card
+    expect(renderDashboard(12_000, 90_000, false)).not.toContain('Sum of historical values')
+  })
+
+  it('blurs amounts in privacy mode and copes without a price', () => {
     const html = renderDashboard(null, null, true)
-    expect(html).toContain('Enter amount paid')
     expect(html).toContain('blur-[7px]')
+    expect(html).toContain('Price unavailable')
   })
 
   it('masks identifiers by default', () => {

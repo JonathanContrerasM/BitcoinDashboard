@@ -42,7 +42,7 @@ export function AmountPaidInput({
             autoComplete="off"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="e.g. 12'500.00"
+            placeholder={metrics.historicalValue > 0 && !privacy ? fmt.number(metrics.historicalValue, 2) : "e.g. 12'500.00"}
             className={`w-full rounded-xl border bg-white py-2.5 pr-3 pl-14 text-right text-lg font-semibold tabular-nums text-slate-900 outline-none focus:ring-2 dark:bg-slate-950 dark:text-white ${
               invalid
                 ? 'border-rose-400 focus:ring-rose-500/20'
@@ -55,7 +55,7 @@ export function AmountPaidInput({
             <span className="text-rose-500">Not a valid number</span>
           ) : (
             <>
-              Market value of your purchases:{' '}
+              {metrics.amountPaidEstimated ? 'Using the market value of your purchases as an estimate:' : 'Market value of your purchases:'}{' '}
               <Sensitive className="font-medium tabular-nums text-slate-700 dark:text-slate-300">
                 {fmt.fiat(metrics.historicalValue)}
               </Sensitive>
@@ -63,8 +63,16 @@ export function AmountPaidInput({
                 <Sensitive className="tabular-nums">
                   {' '}
                   (≈ {usd.fmt.fiat(usd.metrics.historicalValue)}
-                  {usd.metrics.amountPaid != null && <>; paid ≈ {usd.fmt.fiat(usd.metrics.amountPaid)}</>})
+                  {!metrics.amountPaidEstimated && usd.metrics.amountPaid != null && (
+                    <>; paid ≈ {usd.fmt.fiat(usd.metrics.amountPaid)}</>
+                  )}
+                  )
                 </Sensitive>
+              )}
+              {metrics.amountPaidEstimated && (
+                <span className="block text-amber-700 dark:text-amber-400">
+                  Enter what you really paid to include exchange fees and spread.
+                </span>
               )}
             </>
           )}

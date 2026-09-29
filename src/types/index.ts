@@ -77,7 +77,12 @@ export interface PortfolioMetrics {
   /** Received rows without a historical value (excluded from fiat sums). */
   missingHistoricalValues: number
   avgBuyPriceMarket: number | null
+  /**
+   * Total amount paid. When the user hasn't entered it, defaults to `historicalValue`
+   * (market value of purchases) and `amountPaidEstimated` is true.
+   */
   amountPaid: number | null
+  amountPaidEstimated: boolean
   avgBuyPriceEffective: number | null
   currentPrice: number | null
   currentValue: number | null

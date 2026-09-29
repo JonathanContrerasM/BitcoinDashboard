@@ -117,7 +117,17 @@ export function WhatIfSimulator({ m }: { m: PortfolioMetrics }) {
           <div className={`text-xs tabular-nums ${tone(change)}`}>{fmt.percent(change, { signed: true })} vs. today</div>
         </div>
         <div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Profit / Loss</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Profit / Loss
+            {m.amountPaidEstimated && (
+              <span
+                className="ml-1.5 rounded bg-amber-500/15 px-1 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400"
+                title="Based on the market value of your purchases"
+              >
+                est.
+              </span>
+            )}
+          </div>
           {r.pnl == null ? (
             <div className="text-sm text-slate-400 italic">Enter amount paid</div>
           ) : (

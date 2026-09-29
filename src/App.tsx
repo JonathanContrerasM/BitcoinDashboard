@@ -77,7 +77,7 @@ export default function App() {
     // with each purchase converted at its own day's rate.
     const base = computeMetrics(usdTxs.transactions, null, priceNow)
     const amountPaidUsd =
-      metrics.amountPaid != null && metrics.historicalValue > 0
+      !metrics.amountPaidEstimated && metrics.amountPaid != null && metrics.historicalValue > 0
         ? metrics.amountPaid * (base.historicalValue / metrics.historicalValue)
         : null
     const usdMetrics = amountPaidUsd != null ? computeMetrics(usdTxs.transactions, amountPaidUsd, priceNow) : base
@@ -245,7 +245,7 @@ export default function App() {
                 txs={txs}
                 prices={chartPrices}
                 scale={scale}
-                hasAmountPaid={metrics.amountPaid != null}
+                hasAmountPaid={!metrics.amountPaidEstimated}
                 loading={history.loading}
                 note={note}
               />
@@ -262,7 +262,7 @@ export default function App() {
 
             <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
               <CostBreakdown m={metrics} />
-              <AccumulationChart txs={txs} scale={scale} hasAmountPaid={metrics.amountPaid != null} />
+              <AccumulationChart txs={txs} scale={scale} hasAmountPaid={!metrics.amountPaidEstimated} />
               <BuyDistribution lots={lots} currentPrice={effectivePrice} />
             </div>
 

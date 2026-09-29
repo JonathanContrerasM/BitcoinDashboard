@@ -61,22 +61,34 @@ describe('heldSats', () => {
 })
 
 describe('computeMetrics', () => {
-  it('computes market figures without amount paid', () => {
+  it('estimates amount paid from historical values when not entered', () => {
     const m = computeMetrics(all, null, 100_000)
     expect(m.heldSats).toBe(79_990_000)
     expect(m.networkFeeSats).toBe(10_000)
     expect(m.historicalValue).toBe(50_000)
     expect(m.avgBuyPriceMarket).toBeCloseTo(50_000)
     expect(m.currentValue).toBeCloseTo(79_990)
-    expect(m.amountPaid).toBeNull()
-    expect(m.pnl).toBeNull()
+    expect(m.amountPaid).toBe(50_000)
+    expect(m.amountPaidEstimated).toBe(true)
+    expect(m.pnl).toBeCloseTo(79_990 - 50_000)
+    expect(m.pnlPct).toBeCloseTo((79_990 - 50_000) / 50_000)
+    expect(m.avgBuyPriceEffective).toBeCloseTo(50_000 / 0.7999)
+    expect(m.breakEvenPrice).toBeCloseTo(50_000 / 0.7999)
+    // Fees can't be derived from an estimate: unknown, not 0.
     expect(m.feesSpread).toBeNull()
-    expect(m.avgBuyPriceEffective).toBeNull()
-    expect(m.breakEvenPrice).toBeNull()
+    expect(m.feesSpreadPct).toBeNull()
+  })
+
+  it('has no amount paid at all without historical values', () => {
+    const m = computeMetrics([tx({ type: 'received', amountSats: 1000 })], null, 100_000)
+    expect(m.amountPaid).toBeNull()
+    expect(m.amountPaidEstimated).toBe(false)
+    expect(m.pnl).toBeNull()
   })
 
   it('computes cost basis, P/L and fees with amount paid', () => {
     const m = computeMetrics(all, 52_000, 100_000)
+    expect(m.amountPaidEstimated).toBe(false)
     expect(m.feesSpread).toBeCloseTo(2_000)
     expect(m.feesSpreadPct).toBeCloseTo(2_000 / 52_000)
     expect(m.avgBuyPriceEffective).toBeCloseTo(52_000 / 0.7999)
@@ -91,9 +103,12 @@ describe('computeMetrics', () => {
     expect(m.networkFeeFiatCurrent).toBeCloseTo(0.0001 * 100_000)
   })
 
-  it('treats zero/invalid amount paid as empty', () => {
-    expect(computeMetrics(all, 0, 100_000).amountPaid).toBeNull()
-    expect(computeMetrics(all, Number.NaN, 100_000).amountPaid).toBeNull()
+  it('treats zero/invalid amount paid as empty (estimated)', () => {
+    for (const v of [0, -5, Number.NaN]) {
+      const m = computeMetrics(all, v, 100_000)
+      expect(m.amountPaid).toBe(50_000)
+      expect(m.amountPaidEstimated).toBe(true)
+    }
   })
 
   it('handles missing price and missing historical values', () => {
