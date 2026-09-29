@@ -1,0 +1,31 @@
+# Dependencies & build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Environment
+.env*
+
+# Personal data — NEVER commit real exports
+*.csv
+!sample-data.csv
+*.xlsx
+*.xls
+data/
+private/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
