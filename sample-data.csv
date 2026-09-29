@@ -1,0 +1,16 @@
+Time,Type,Amount,Unit,Fee,Fee Unit,Address,Transaction ID,Historical value,Historical value currency,Note
+2024-01-15T09:12:44+01:00,received,1200000,satoshi,,,bc1q5ahlgn2a4l07ua6h4amsuax8maertqwku5xxzx,8a281268a6cda8af7bdc78da4bc445da7347cd078b0f5edfc97c27fdb6da1319,446.40,CHF,DCA January
+2024-02-20T18:03:10+01:00,received,0.00800000,BTC,,,bc1q80r987scp3xq36spsmkdkznjlghpp7nhvus80p,1592a10f60f26e63c005621414e5ce081b91d91752417b873b79d8a643f8c677,362.40,CHF,
+2024-03-28T07:45:02+01:00,received,0.00500000,BTC,,,bc1quq3afpc5pehv4mjea7zmp7ew5htvnxvpumv026,1e8244e4cdf502f96a3e3fa8e0ae05987caf152eeae82dde40f68361398f8a2f,310.50,CHF,"Bought the dip, sort of"
+2024-05-14T12:30:55+02:00,received,1050000,satoshi,,,bc1q9mg638gc2lkaaw2hp6qq6rwk3vy0yksnv4wy8c,a6ab7b7fbd3e56253a1ee9db9edd80c7232aeb43becd8b71439e279f4855baa3,592.20,CHF,DCA
+2024-08-06T08:20:31+02:00,received,0.02100000,BTC,,,bc1q9hz40ctwyla7le8hse5tl3s0utrnuap0ry9vxk,60f20004956cec69eeaa50d692456497327f11b154d474ada1ef67c1451ba3af,991.20,CHF,Crash buy
+2024-10-02T21:10:09+02:00,received,0.00900000,BTC,,,bc1qmguzn5upyckqtsww70z06awdxvt0e9axntlewe,208ab6bb6ed53d8ead72a16edb7078f7a73acd90a51344e1e8d39b7e2355ee25,475.20,CHF,
+2024-12-17T10:55:40+01:00,received,600000,satoshi,,,bc1qcu0wfrnv4qp6n35tqalsfff8xmg62rqj50d3p9,3a57e83b79bd809aa74f7a61d19c184498c8e63fa1026211c153383ffc3f5dad,564.60,CHF,Year-end top-up
+2025-02-11T16:41:22+01:00,sent,0.00400000,BTC,1840,satoshi,bc1qp4r7g4st959xa467afgjv88dsyqnsjse3k6jvz,354494d99de9872f0ea8bcb2d22a3e6c328216d01ccef8b726b15daa5955a4fc,353.20,CHF,Paid a friend back
+2025-04-08T06:15:48+02:00,received,0.01250000,BTC,,,bc1qgtw7cu3788r3gj5fdqgrg84axd7netwcm7mmz0,ade02e880920eddcdd87002fc793315d1f2c96841717a02d9e15a260b1a33f9f,817.50,CHF,Tariff dip
+2025-06-19T13:02:17+02:00,received,780000,satoshi,,,bc1q9qd9tszyeg3vvmse6dtm7nl7h4aa75m65yfy2v,5f5ee86d85fd56aac263aaa29f1cbf89e6a2ca42aa01fcbac4efc40709da1edf,664.56,CHF,DCA
+2025-08-11T14:16:20+02:00,received,0.02659237,BTC,,,bc1qugs586zst8u39jdnkn2lkeru29mmz0c4lx3m94,1e420ea1d97a3c14e40917ea7be8b8f90681074a72620a331a1730da283e1f59,"2,507.66",CHF,
+2025-11-21T19:48:03+01:00,received,0.01420000,BTC,,,bc1qt4aj4nwca4crpg9cpt7k6kzleckphztx9j3gff,e91e30ef8ebe6cbba29366969ac54118790d3334fdf89d11f37f58f662bf38ae,1'005.36,CHF,"DCA, November"
+2026-01-27T11:05:36+01:00,sent,250000,satoshi,1840,satoshi,bc1qfmxg0n3tru02h0cjzztq9xmk4vgptx6msprtss,37785f28c068548c01644c9e818137496c47a2353baebd15cfd8c65715acb640,181.25,CHF,Hardware wallet test
+2026-03-16T09:33:51+01:00,received,0.00980000,BTC,,,bc1qhhy9py6klekfcv57268wceent6gdlfewywsdsy,f629adf1d63e3dd354a31c460925107218b7a4c6ff819040293ea614fc7d0934,655.62,CHF,
+2026-06-02T17:22:14+02:00,received,0.01150000,BTC,,,bc1qy7wev3rn3s4a2r8s9n63jn403cdk5s59kp5682,eaafcda135c10d0a5a06911462dea671762924e2818757b3dd1d5c8dbab26f6e,947.60,CHF,DCA
