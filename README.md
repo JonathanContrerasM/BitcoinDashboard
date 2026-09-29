@@ -12,6 +12,7 @@ uploaded or stored.
 - **CSV import**: drag and drop or pick one or more files. Rows are merged, deduplicated by transaction ID, and summarized (imported / skipped / warnings).
 - **Robust parsing**: ISO 8601 timestamps with offsets, `satoshi` and `BTC` units (kept as integer sats internally), optional network fees, Swiss (`5'488.11`), comma (`5,488.11`) and plain number formats, and quoted fields.
 - **Currency detection**: the display currency comes from the file's `Historical value currency` (CHF, EUR, USD, …). Mixed currencies are rejected with a clear error.
+- **USD alongside your currency**: if your file isn't in USD, key figures also show US dollars. Current values use today's BTC/USD price. Purchases, amount paid and cost basis use the exchange rate on each transaction's day, so the USD P/L is correct. Toggle it with the **USD** button.
 - **Live price**: fetched from Kraken's public market data in your currency, refreshed every 60 s, with a manual refresh button, a manual price override, and a fully offline mode.
 - **KPIs**: BTC held, current value, total paid, profit/loss, effective average buy price, break-even price, fees & spread, network fees.
 - **Charts**: portfolio value vs. amount invested over time, BTC price with your buys and your average buy price, cost breakdown, monthly accumulation, buy price distribution.
@@ -42,6 +43,7 @@ transaction IDs, or amounts are ever sent.
 | --- | --- |
 | Current price + rolling 24h change (every 60 s) | `GET https://api.kraken.com/0/public/OHLC?pair=XBT<CUR>&interval=15&since=<now − 24h>` |
 | Daily price history for charts (once per session) | `GET https://api.kraken.com/0/public/OHLC?pair=XBT<CUR>&interval=1440` |
+| Same two requests with `pair=XBTUSD` (only if your currency isn't USD) | Used for the secondary USD figures and to derive daily exchange rates |
 
 Supported currencies are USD, EUR, CHF, GBP, CAD, AUD and JPY. For any other currency, enter a manual
 price. Kraken returns about 2 years of daily history, and chart points older than that use prices

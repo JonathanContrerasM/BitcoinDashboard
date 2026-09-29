@@ -1,15 +1,31 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { useUi } from '../context/ui'
 import type { PortfolioMetrics } from '../types'
-import { Card, ChartEmpty, Sensitive, TooltipBox } from './ui'
+import { Alt, Card, ChartEmpty, Sensitive, TooltipBox } from './ui'
 
 export function CostBreakdown({ m }: { m: PortfolioMetrics }) {
-  const { fmt, colors } = useUi()
+  const { fmt, colors, usd } = useUi()
+  const um = usd?.metrics
   const network = m.networkFeeFiatHistorical ?? m.networkFeeFiatCurrent ?? 0
   const slices = [
-    { name: 'Market value of purchases', value: m.historicalValue, color: colors.accent },
-    { name: 'Fees, spread & exchange costs', value: Math.max(0, m.feesSpread ?? 0), color: colors.loss },
-    { name: 'Network fees', value: network, color: colors.network },
+    {
+      name: 'Market value of purchases',
+      value: m.historicalValue,
+      usd: um?.historicalValue,
+      color: colors.accent,
+    },
+    {
+      name: 'Fees, spread & exchange costs',
+      value: Math.max(0, m.feesSpread ?? 0),
+      usd: um ? Math.max(0, um.feesSpread ?? 0) : undefined,
+      color: colors.loss,
+    },
+    {
+      name: 'Network fees',
+      value: network,
+      usd: um ? (um.networkFeeFiatHistorical ?? um.networkFeeFiatCurrent ?? 0) : undefined,
+      color: colors.network,
+    },
   ]
   const total = slices.reduce((s, x) => s + x.value, 0)
 
@@ -47,6 +63,9 @@ export function CostBreakdown({ m }: { m: PortfolioMetrics }) {
                         title={p.name}
                         rows={[
                           { label: 'Amount', value: fmt.fiat(p.value), color: p.color, sensitive: true },
+                          ...(usd && p.usd != null
+                            ? [{ label: 'USD', value: usd.fmt.fiat(p.usd), sensitive: true }]
+                            : []),
                           { label: 'Share', value: fmt.percent(p.value / total) },
                         ]}
                       />
@@ -71,11 +90,12 @@ export function CostBreakdown({ m }: { m: PortfolioMetrics }) {
                 </span>
                 <span className="text-right tabular-nums">
                   <Sensitive className="block font-medium text-slate-900 dark:text-white">{fmt.fiat(s.value)}</Sensitive>
+                  {usd && s.usd != null && <Alt>{usd.fmt.fiat(s.usd)}</Alt>}
                   <span className="text-xs text-slate-500">{fmt.percent(s.value / total)}</span>
                 </span>
               </li>
             ))}
-            {m.amountPaid == null && (
+            {m.amountPaidEstimated && (
               <li className="text-xs text-slate-500 italic dark:text-slate-400">
                 Enter amount paid to see fees & spread.
               </li>

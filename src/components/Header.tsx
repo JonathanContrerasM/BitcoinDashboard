@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import {
   Bitcoin,
+  DollarSign,
   EyeOff,
   Eye,
   Moon,
@@ -28,6 +29,9 @@ interface Props {
   onOffline: (v: boolean) => void
   onTogglePrivacy: () => void
   onToggleTheme: () => void
+  usdAvailable: boolean
+  showUsd: boolean
+  onToggleUsd: () => void
   onImport: (files: FileList) => void
   onClear: () => void
   hasData: boolean
@@ -37,7 +41,7 @@ const iconBtn =
   'inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800'
 
 export function Header(props: Props) {
-  const { privacy, theme, fmt } = useUi()
+  const { privacy, theme, fmt, usd } = useUi()
   const fileInput = useRef<HTMLInputElement>(null)
   const [priceOpen, setPriceOpen] = useState(false)
   const { price, currency } = props
@@ -98,6 +102,17 @@ export function Header(props: Props) {
                     MANUAL
                   </span>
                 )}
+                {usd?.priceNow != null && (
+                  <span className="self-center text-xs font-medium tabular-nums text-slate-500 dark:text-slate-400">
+                    {usd.fmt.fiat(usd.priceNow, { decimals: 0 })}
+                    {usd.change24h != null && (
+                      <span className={usd.change24h >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
+                        {' '}
+                        {fmt.percent(usd.change24h, { signed: true })}
+                      </span>
+                    )}
+                  </span>
+                )}
                 {props.offline && <WifiOff size={14} className="self-center text-slate-400" />}
               </button>
               {priceOpen && (
@@ -136,6 +151,18 @@ export function Header(props: Props) {
             {privacy ? <EyeOff size={16} /> : <Eye size={16} />}
             <span className="hidden sm:inline">Privacy</span>
           </button>
+          {props.usdAvailable && (
+            <button
+              type="button"
+              onClick={props.onToggleUsd}
+              className={`${iconBtn} ${props.showUsd ? 'border-orange-500/60 bg-orange-500/10 text-orange-600 dark:text-orange-400' : ''}`}
+              title="Also show values in US dollars"
+              aria-pressed={props.showUsd}
+            >
+              <DollarSign size={16} />
+              <span className="hidden sm:inline">USD</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={props.onToggleTheme}

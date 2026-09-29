@@ -3,12 +3,12 @@ import { useUi } from '../context/ui'
 import { whatIf } from '../lib/calculations'
 import { parseFiatNumber } from '../lib/numbers'
 import type { PortfolioMetrics } from '../types'
-import { Card, ChartEmpty, Sensitive } from './ui'
+import { Alt, Card, ChartEmpty, Sensitive } from './ui'
 
 const QUICK = [-0.5, -0.25, 0.25, 0.5, 1]
 
 export function WhatIfSimulator({ m }: { m: PortfolioMetrics }) {
-  const { fmt } = useUi()
+  const { fmt, usd } = useUi()
   const base = m.currentPrice
   // null = follow the current price
   const [override, setOverride] = useState<number | null>(null)
@@ -24,6 +24,7 @@ export function WhatIfSimulator({ m }: { m: PortfolioMetrics }) {
 
   const price = override ?? base
   const r = whatIf(m.heldSats, m.amountPaid, price)
+  const ru = usd ? whatIf(m.heldSats, usd.metrics.amountPaid, price * usd.rateNow) : null
   const max = Math.max(base * 4, price)
   const set = (p: number) => {
     const v = Math.max(0, Math.round(p))
@@ -100,16 +101,33 @@ export function WhatIfSimulator({ m }: { m: PortfolioMetrics }) {
         </div>
       </div>
 
+      {ru && (
+        <div className="mt-1 text-right text-xs text-slate-500 tabular-nums dark:text-slate-400">
+          ≈ {usd?.fmt.fiat(ru.price, { decimals: 0 })} per BTC
+        </div>
+      )}
+
       <div className="mt-5 grid grid-cols-2 gap-4">
         <div>
           <div className="text-xs text-slate-500 dark:text-slate-400">Portfolio value</div>
           <Sensitive className="text-xl font-semibold tabular-nums text-slate-900 dark:text-white">
             {fmt.fiat(r.value)}
           </Sensitive>
+          {ru && usd && <Alt>{usd.fmt.fiat(ru.value)}</Alt>}
           <div className={`text-xs tabular-nums ${tone(change)}`}>{fmt.percent(change, { signed: true })} vs. today</div>
         </div>
         <div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Profit / Loss</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Profit / Loss
+            {m.amountPaidEstimated && (
+              <span
+                className="ml-1.5 rounded bg-amber-500/15 px-1 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400"
+                title="Based on the market value of your purchases"
+              >
+                est.
+              </span>
+            )}
+          </div>
           {r.pnl == null ? (
             <div className="text-sm text-slate-400 italic">Enter amount paid</div>
           ) : (
@@ -117,6 +135,11 @@ export function WhatIfSimulator({ m }: { m: PortfolioMetrics }) {
               <Sensitive className={`text-xl font-semibold tabular-nums ${tone(r.pnl)}`}>
                 {fmt.fiat(r.pnl, { signed: true })}
               </Sensitive>
+              {ru?.pnl != null && usd && (
+                <Alt>
+                  {usd.fmt.fiat(ru.pnl, { signed: true })} ({fmt.percent(ru.pnlPct, { signed: true })})
+                </Alt>
+              )}
               <div className={`text-xs tabular-nums ${tone(r.pnl)}`}>{fmt.percent(r.pnlPct, { signed: true })}</div>
             </>
           )}

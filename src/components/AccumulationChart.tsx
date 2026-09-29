@@ -8,9 +8,12 @@ import { Card, ChartEmpty, Segmented, TooltipBox } from './ui'
 const MODES = ['Sats', 'Spent'] as const
 
 export function AccumulationChart({ txs, scale, hasAmountPaid }: { txs: Transaction[]; scale: number; hasAmountPaid: boolean }) {
-  const { fmt, colors, privacy } = useUi()
+  const { fmt, colors, privacy, usd } = useUi()
   const [mode, setMode] = useState<(typeof MODES)[number]>('Sats')
-  const data = useMemo(() => monthlyAccumulation(txs, scale), [txs, scale])
+  const data = useMemo(() => {
+    const usdByMonth = usd ? new Map(monthlyAccumulation(usd.txs, usd.scale).map((b) => [b.month, b.spent])) : null
+    return monthlyAccumulation(txs, scale).map((b) => ({ ...b, spentUsd: usdByMonth?.get(b.month) ?? null }))
+  }, [txs, scale, usd])
   const key = mode === 'Sats' ? 'sats' : 'spent'
 
   return (
@@ -56,6 +59,9 @@ export function AccumulationChart({ txs, scale, hasAmountPaid }: { txs: Transact
                       rows={[
                         { label: 'Acquired', value: fmt.sats(p.sats), color: colors.accent, sensitive: true },
                         { label: 'Spent', value: fmt.fiat(p.spent), sensitive: true },
+                        ...(usd && p.spentUsd != null
+                          ? [{ label: 'Spent (USD)', value: usd.fmt.fiat(p.spentUsd), sensitive: true }]
+                          : []),
                         { label: 'Buys', value: String(p.buys) },
                       ]}
                     />

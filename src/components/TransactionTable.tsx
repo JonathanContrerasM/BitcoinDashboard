@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useUi } from '../context/ui'
 import type { Lot } from '../types'
-import { Card, Masked, RevealToggle, Segmented, Sensitive } from './ui'
+import { Alt, Card, Masked, RevealToggle, Segmented, Sensitive } from './ui'
 
 type SortKey = 'date' | 'type' | 'amount' | 'price' | 'value' | 'current' | 'pnl' | 'fee'
 const FILTERS = ['All', 'Received', 'Sent'] as const
@@ -20,7 +20,7 @@ const sorters: Record<SortKey, (l: Lot) => number | string> = {
 }
 
 export function TransactionTable({ lots }: { lots: Lot[] }) {
-  const { fmt } = useUi()
+  const { fmt, usd } = useUi()
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All')
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'date', dir: -1 })
@@ -125,7 +125,11 @@ export function TransactionTable({ lots }: { lots: Lot[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
-            {visible.map((l) => (
+            {visible.map((l) => {
+              const u = usd?.lotsByKey.get(l.tx.key)
+              const usdFiat = (v: number | null | undefined, decimals = 2, signed = false) =>
+                usd && v != null ? <Alt>{usd.fmt.fiat(v, { decimals, signed })}</Alt> : null
+              return (
               <tr key={l.tx.key} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
                 <td className="px-3 py-2.5 whitespace-nowrap text-slate-700 dark:text-slate-300">
                   {fmt.dateTime(l.tx.timestamp)}
@@ -151,18 +155,22 @@ export function TransactionTable({ lots }: { lots: Lot[] }) {
                 </td>
                 <td className="px-3 py-2.5 text-right whitespace-nowrap text-slate-700 dark:text-slate-300">
                   {fmt.fiat(l.pricePerBtc, { decimals: 0 })}
+                  {u && usd && u.pricePerBtc != null && <Alt sensitive={false}>{usd.fmt.fiat(u.pricePerBtc, { decimals: 0 })}</Alt>}
                 </td>
                 <td className="px-3 py-2.5 text-right whitespace-nowrap">
                   <Sensitive>{fmt.fiat(l.tx.historicalValue)}</Sensitive>
+                  {usdFiat(u?.tx.historicalValue)}
                 </td>
                 <td className="px-3 py-2.5 text-right whitespace-nowrap">
                   <Sensitive>{fmt.fiat(l.currentValue)}</Sensitive>
+                  {usdFiat(u?.currentValue)}
                 </td>
                 <td className={`px-3 py-2.5 text-right whitespace-nowrap ${pnlClass(l.pnl)}`}>
                   <Sensitive>
                     <span className="block">{fmt.fiat(l.pnl, { signed: true })}</span>
                   </Sensitive>
                   {l.pnlPct != null && <span className="block text-xs">{fmt.percent(l.pnlPct, { signed: true })}</span>}
+                  {usdFiat(u?.pnl, 2, true)}
                 </td>
                 <td className="px-3 py-2.5 text-right whitespace-nowrap text-slate-600 dark:text-slate-400">
                   {l.tx.feeSats ? <Sensitive>{fmt.sats(l.tx.feeSats)}</Sensitive> : '—'}
@@ -179,7 +187,8 @@ export function TransactionTable({ lots }: { lots: Lot[] }) {
                   {l.tx.note || '—'}
                 </td>
               </tr>
-            ))}
+              )
+            })}
           </tbody>
         </table>
       </div>

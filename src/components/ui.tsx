@@ -47,6 +47,30 @@ export function Sensitive({ children, className = '' }: { children: ReactNode; c
   )
 }
 
+/** Secondary (USD) figure: small, muted, blurred in privacy mode. */
+export function Alt({
+  children,
+  sensitive = true,
+  className = '',
+}: {
+  children: ReactNode
+  sensitive?: boolean
+  className?: string
+}) {
+  const { privacy } = useUi()
+  const hide = sensitive && privacy
+  return (
+    <span
+      className={`block text-xs font-normal text-slate-500 tabular-nums dark:text-slate-400 ${
+        hide ? 'pointer-events-none blur-[6px] select-none' : ''
+      } ${className}`}
+      aria-hidden={hide || undefined}
+    >
+      ≈ {children}
+    </span>
+  )
+}
+
 /** Address / tx ID, masked unless the user reveals identifiers. */
 export function Masked({ value }: { value: string }) {
   const { revealIds, privacy } = useUi()

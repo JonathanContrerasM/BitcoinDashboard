@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useUi } from '../context/ui'
 import type { PortfolioStats } from '../lib/calculations'
-import { Card, Sensitive } from './ui'
+import { Alt, Card, Sensitive } from './ui'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -13,7 +13,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export function StatsPanel({ s }: { s: PortfolioStats }) {
-  const { fmt } = useUi()
+  const { fmt, usd } = useUi()
   const years = s.holdingDays != null ? s.holdingDays / 365.25 : null
   return (
     <Card title="Stats">
@@ -32,6 +32,7 @@ export function StatsPanel({ s }: { s: PortfolioStats }) {
             {s.avgPurchaseFiat != null && (
               <span className="block text-xs font-normal text-slate-500">{fmt.fiat(s.avgPurchaseFiat)}</span>
             )}
+            {usd?.stats.avgPurchaseFiat != null && <Alt>{usd.fmt.fiat(usd.stats.avgPurchaseFiat)}</Alt>}
           </Sensitive>
         </Row>
         <Row label="Largest purchase">
@@ -48,6 +49,7 @@ export function StatsPanel({ s }: { s: PortfolioStats }) {
           {s.bestBuy ? (
             <span className="text-emerald-600 dark:text-emerald-400">
               {fmt.fiat(s.bestBuy.price, { decimals: 0 })}
+              {usd?.stats.bestBuy && <Alt sensitive={false}>{usd.fmt.fiat(usd.stats.bestBuy.price, { decimals: 0 })}</Alt>}
               <span className="block text-xs font-normal text-slate-500">{fmt.date(s.bestBuy.tx.timestamp)}</span>
             </span>
           ) : (
@@ -58,6 +60,7 @@ export function StatsPanel({ s }: { s: PortfolioStats }) {
           {s.worstBuy ? (
             <span className="text-rose-600 dark:text-rose-400">
               {fmt.fiat(s.worstBuy.price, { decimals: 0 })}
+              {usd?.stats.worstBuy && <Alt sensitive={false}>{usd.fmt.fiat(usd.stats.worstBuy.price, { decimals: 0 })}</Alt>}
               <span className="block text-xs font-normal text-slate-500">{fmt.date(s.worstBuy.tx.timestamp)}</span>
             </span>
           ) : (
