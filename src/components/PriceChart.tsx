@@ -36,7 +36,11 @@ export function PriceChart({
   error: string | null
   now: number
 }) {
-  const { fmt, colors, privacy } = useUi()
+  const { fmt, colors, privacy, usd } = useUi()
+  const inUsd = (price: number, t: number) => {
+    const rate = usd?.rateAt(t)
+    return usd && rate != null ? [{ label: 'In USD', value: usd.fmt.fiat(price * rate, { decimals: 0 }) }] : []
+  }
   const [range, setRange] = useState<Range>('1Y')
 
   const { line, buys } = useMemo(() => {
@@ -94,6 +98,7 @@ export function PriceChart({
                         title={`Buy · ${fmt.date(p.t)}`}
                         rows={[
                           { label: 'Price paid', value: fmt.fiat(p.price, { decimals: 0 }), color: colors.accent },
+                          ...inUsd(p.price, p.t),
                           { label: 'Amount', value: fmt.sats(p.sats), sensitive: true },
                         ]}
                       />
@@ -102,7 +107,10 @@ export function PriceChart({
                   return (
                     <TooltipBox
                       title={fmt.date(p.t)}
-                      rows={[{ label: 'BTC price', value: fmt.fiat(p.price, { decimals: 0 }), color: colors.muted }]}
+                      rows={[
+                        { label: 'BTC price', value: fmt.fiat(p.price, { decimals: 0 }), color: colors.muted },
+                        ...inUsd(p.price, p.t),
+                      ]}
                     />
                   )
                 }}

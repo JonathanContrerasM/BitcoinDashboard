@@ -1,5 +1,7 @@
 import { createContext, useContext } from 'react'
+import type { PortfolioStats } from '../lib/calculations'
 import type { Formatters } from '../lib/format'
+import type { Lot, PortfolioMetrics, Transaction } from '../types'
 
 export type Theme = 'dark' | 'light'
 
@@ -46,6 +48,26 @@ export const CHART_COLORS: Record<Theme, ChartColors> = {
   },
 }
 
+/** Secondary USD view of the portfolio (null when the import currency is USD or no rate is known). */
+export interface UsdView {
+  fmt: Formatters
+  /** Transactions with historical values converted at each day's rate. */
+  txs: Transaction[]
+  metrics: PortfolioMetrics
+  lotsByKey: Map<string, Lot>
+  stats: PortfolioStats
+  /** costScale for the USD view (amount paid ÷ market value, in USD). */
+  scale: number
+  /** USD per 1 unit of local currency at time t (historical). */
+  rateAt: (t: number) => number | null
+  /** USD per 1 unit of local currency now. */
+  rateNow: number
+  priceNow: number | null
+  change24h: number | null
+  /** Transactions older than the available FX data (converted at the earliest known rate). */
+  approximated: number
+}
+
 export interface UiState {
   privacy: boolean
   revealIds: boolean
@@ -53,6 +75,7 @@ export interface UiState {
   theme: Theme
   colors: ChartColors
   fmt: Formatters
+  usd: UsdView | null
 }
 
 export const UiContext = createContext<UiState | null>(null)

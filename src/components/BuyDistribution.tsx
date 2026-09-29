@@ -5,13 +5,14 @@ import type { Lot } from '../types'
 import { Card, ChartEmpty, TooltipBox } from './ui'
 
 export function BuyDistribution({ lots, currentPrice }: { lots: Lot[]; currentPrice: number | null }) {
-  const { fmt, colors } = useUi()
+  const { fmt, colors, usd } = useUi()
   const data = useMemo(
     () =>
       lots
         .filter((l) => l.tx.type === 'received' && l.pricePerBtc != null)
         .map((l) => ({
           key: l.tx.key,
+          t: l.tx.timestamp,
           label: fmt.date(l.tx.timestamp),
           price: l.pricePerBtc as number,
           sats: l.tx.amountSats,
@@ -58,6 +59,9 @@ export function BuyDistribution({ lots, currentPrice }: { lots: Lot[]; currentPr
                       title={p.label}
                       rows={[
                         { label: 'Price per BTC', value: fmt.fiat(p.price, { decimals: 0 }) },
+                        ...(usd && usd.rateAt(p.t) != null
+                          ? [{ label: 'In USD', value: usd.fmt.fiat(p.price * (usd.rateAt(p.t) as number), { decimals: 0 }) }]
+                          : []),
                         { label: 'Amount', value: fmt.sats(p.sats), sensitive: true },
                         ...(p.pct != null
                           ? [{ label: 'vs. today', value: fmt.percent(p.pct, { signed: true }), color: p.pct >= 0 ? colors.gain : colors.loss }]

@@ -14,7 +14,7 @@ export function AmountPaidInput({
   metrics: PortfolioMetrics
   invalid: boolean
 }) {
-  const { fmt, privacy } = useUi()
+  const { fmt, privacy, usd } = useUi()
   return (
     <section className="flex flex-col gap-4 rounded-2xl border border-orange-500/30 bg-gradient-to-r from-orange-500/[0.07] to-transparent p-5 lg:flex-row lg:items-center">
       <div className="flex items-center gap-3">
@@ -59,6 +59,13 @@ export function AmountPaidInput({
               <Sensitive className="font-medium tabular-nums text-slate-700 dark:text-slate-300">
                 {fmt.fiat(metrics.historicalValue)}
               </Sensitive>
+              {usd && (
+                <Sensitive className="tabular-nums">
+                  {' '}
+                  (≈ {usd.fmt.fiat(usd.metrics.historicalValue)}
+                  {usd.metrics.amountPaid != null && <>; paid ≈ {usd.fmt.fiat(usd.metrics.amountPaid)}</>})
+                </Sensitive>
+              )}
             </>
           )}
         </p>

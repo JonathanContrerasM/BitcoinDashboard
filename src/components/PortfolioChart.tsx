@@ -21,8 +21,17 @@ export function PortfolioChart({
   /** Explains where prices came from when market data is incomplete. */
   note: string | null
 }) {
-  const { fmt, colors, privacy } = useUi()
-  const data = useMemo(() => portfolioSeries(txs, prices, scale), [txs, prices, scale])
+  const { fmt, colors, privacy, usd } = useUi()
+  const data = useMemo(() => {
+    const local = portfolioSeries(txs, prices, scale)
+    // USD invested uses each purchase converted at its own day's rate; value uses that day's rate.
+    const investedUsd = usd ? portfolioSeries(usd.txs, prices, usd.scale) : null
+    return local.map((p, i) => ({
+      ...p,
+      valueUsd: usd ? p.value * (usd.rateAt(p.t) ?? NaN) : null,
+      investedUsd: investedUsd?.[i]?.invested ?? null,
+    }))
+  }, [txs, prices, scale, usd])
   const investedLabel = hasAmountPaid ? 'Invested (effective cost)' : 'Invested (market value)'
 
   return (
@@ -74,7 +83,13 @@ export function PortfolioChart({
                       title={fmt.date(p.t)}
                       rows={[
                         { label: 'Value', value: fmt.fiat(p.value), color: colors.accent, sensitive: true },
+                        ...(usd && Number.isFinite(p.valueUsd)
+                          ? [{ label: 'Value (USD)', value: usd.fmt.fiat(p.valueUsd), sensitive: true }]
+                          : []),
                         { label: investedLabel, value: fmt.fiat(p.invested), color: colors.muted, sensitive: true },
+                        ...(usd && p.investedUsd != null
+                          ? [{ label: 'Invested (USD)', value: usd.fmt.fiat(p.investedUsd), sensitive: true }]
+                          : []),
                         { label: 'Holdings', value: fmt.btc(p.holdingsBtc * 1e8), sensitive: true },
                         { label: 'BTC price', value: fmt.fiat(p.price, { decimals: 0 }) },
                       ]}

@@ -13,10 +13,11 @@ import { StatsPanel } from './components/StatsPanel'
 import { TransactionTable } from './components/TransactionTable'
 import { Notice } from './components/ui'
 import { WhatIfSimulator } from './components/WhatIfSimulator'
-import { CHART_COLORS, type Theme, UiContext, type UiState } from './context/ui'
+import { CHART_COLORS, type Theme, UiContext, type UiState, type UsdView } from './context/ui'
 import { useCurrentPrice, usePriceHistory } from './hooks/usePrice'
 import { computeLots, computeMetrics, computeStats, costScale, withImpliedPrices } from './lib/calculations'
 import { createFormatters } from './lib/format'
+import { buildFxSeries, fxAt, toUsdTransactions } from './lib/fx'
 import { parseFiatNumber } from './lib/numbers'
 import { mergeImports, parseCsv } from './lib/parse'
 import type { ImportSummary, PricePoint, Transaction } from './types'
@@ -32,6 +33,7 @@ export default function App() {
   const [privacy, setPrivacy] = useState(false)
   const [revealIds, setRevealIds] = useState(false)
   const [theme, setTheme] = useState<Theme>('dark')
+  const [showUsd, setShowUsd] = useState(true)
   const [now] = useState(() => Date.now())
 
   useEffect(() => {
@@ -48,11 +50,12 @@ export default function App() {
   const history = usePriceHistory(hasData ? currency : null, !offline)
   const effectivePrice = manualValid ?? price.data?.price ?? null
 
+  // Secondary USD view (only when the import currency isn't USD).
+  const wantUsd = hasData && currency != null && currency !== 'USD'
+  const usdPrice = useCurrentPrice(wantUsd ? 'USD' : null, !offline && manualValid == null)
+  const usdHistory = usePriceHistory(wantUsd ? 'USD' : null, !offline)
+
   const fmt = useMemo(() => createFormatters(currency ?? 'USD'), [currency])
-  const ui: UiState = useMemo(
-    () => ({ privacy, revealIds, setRevealIds, theme, colors: CHART_COLORS[theme], fmt }),
-    [privacy, revealIds, theme, fmt],
-  )
 
   const metrics = useMemo(
     () => computeMetrics(txs, amountPaidInvalid ? null : amountPaid, effectivePrice),
@@ -61,6 +64,50 @@ export default function App() {
   const lots = useMemo(() => computeLots(txs, effectivePrice), [txs, effectivePrice])
   const stats = useMemo(() => computeStats(txs, now), [txs, now])
   const scale = costScale(metrics)
+
+  const fxSeries = useMemo(() => buildFxSeries(history.prices, usdHistory.prices), [history.prices, usdHistory.prices])
+  const usdTxs = useMemo(() => toUsdTransactions(txs, fxSeries), [txs, fxSeries])
+  const usd: UsdView | null = useMemo(() => {
+    if (!wantUsd) return null
+    const live = price.data && usdPrice.data ? usdPrice.data.price / price.data.price : null
+    const rateNow = live ?? fxSeries.at(-1)?.[1] ?? null
+    if (rateNow == null) return null
+    const priceNow = manualValid != null ? manualValid * rateNow : (usdPrice.data?.price ?? null)
+    // Amount paid in USD: same premium over market value as in the local currency,
+    // with each purchase converted at its own day's rate.
+    const base = computeMetrics(usdTxs.transactions, null, priceNow)
+    const amountPaidUsd =
+      metrics.amountPaid != null && metrics.historicalValue > 0
+        ? metrics.amountPaid * (base.historicalValue / metrics.historicalValue)
+        : null
+    const usdMetrics = amountPaidUsd != null ? computeMetrics(usdTxs.transactions, amountPaidUsd, priceNow) : base
+    return {
+      fmt: createFormatters('USD'),
+      txs: usdTxs.transactions,
+      metrics: usdMetrics,
+      lotsByKey: new Map(computeLots(usdTxs.transactions, priceNow).map((l) => [l.tx.key, l])),
+      stats: computeStats(usdTxs.transactions, now),
+      scale: costScale(usdMetrics),
+      rateAt: (t: number) => fxAt(fxSeries, t),
+      rateNow,
+      priceNow,
+      change24h: manualValid != null ? null : (usdPrice.data?.change24h ?? null),
+      approximated: usdTxs.approximated,
+    }
+  }, [wantUsd, price.data, usdPrice.data, fxSeries, usdTxs, manualValid, metrics, now])
+
+  const ui: UiState = useMemo(
+    () => ({
+      privacy,
+      revealIds,
+      setRevealIds,
+      theme,
+      colors: CHART_COLORS[theme],
+      fmt,
+      usd: showUsd ? usd : null,
+    }),
+    [privacy, revealIds, theme, fmt, usd, showUsd],
+  )
 
   // Price series for charts: market data, back-filled with prices implied by the user's own transactions.
   const { chartPrices, note } = useMemo(() => {
@@ -135,6 +182,9 @@ export default function App() {
           onOffline={setOffline}
           onTogglePrivacy={() => setPrivacy((p) => !p)}
           onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          usdAvailable={wantUsd}
+          showUsd={showUsd}
+          onToggleUsd={() => setShowUsd((v) => !v)}
           onImport={(f) => void importFiles(f)}
           onClear={clearAll}
           hasData={hasData}
@@ -167,6 +217,12 @@ export default function App() {
               <Notice>
                 {metrics.missingHistoricalValues} received transaction(s) have no historical value and are excluded
                 from fiat totals.
+              </Notice>
+            )}
+            {ui.usd && ui.usd.approximated > 0 && (
+              <Notice tone="info">
+                USD values for {ui.usd.approximated} early transaction(s) use the earliest available exchange rate
+                (market data starts {fmt.date(fxSeries[0][0])}).
               </Notice>
             )}
             {!offline && manualValid == null && price.error && !price.data && (
